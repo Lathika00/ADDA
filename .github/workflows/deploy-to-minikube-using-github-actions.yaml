@@ -13,15 +13,18 @@ jobs:
       - name: Start Minikube
         uses: medyagh/setup-minikube@master
 
-      - name: Check cluster status
-        run: kubectl get pods -A
+      - name: Debug Minikube Environment
+        run: |
+          kubectl get nodes
+          kubectl describe nodes
+          kubectl get pods -A
 
       - name: Build Docker image inside Minikube
         run: |
           export SHELL=/bin/bash
           eval $(minikube -p minikube docker-env)
           docker build -f ./Dockerfile -t lathika/node-app:latest .
-          echo -n "Verifying images:"
+          echo "Verifying images:"
           docker images
 
       - name: Deploy to Minikube
@@ -31,7 +34,7 @@ jobs:
       - name: Wait for pod to be ready
         run: |
           echo "Waiting for the pod to be ready..."
-          kubectl wait --for=condition=ready pod -l app=nodejs-app --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=nodejs-app --timeout=300s
 
       - name: Test service URLs
         run: |
