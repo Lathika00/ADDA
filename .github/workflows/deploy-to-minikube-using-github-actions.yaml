@@ -1,28 +1,39 @@
-name: CI
-on:
-  - pull_request
+name: Deploy to Minikube using GitHub Actions
+
+on: 
+  push:
+
 jobs:
-  job1:
+  deploy:
     runs-on: ubuntu-latest
-    name: build example and deploy to minikube
+    name: Build Node.js Docker Image and Deploy to Minikube
     steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: medyagh/local-dev-example-with-minikube
-    - name: Start minikube
-      uses: medyagh/setup-minikube@latest
-    - name: Try the cluster!
-      run: kubectl get pods -A
-    - name: Build image
-      run: |
-        minikube image build -t local/devex:v1 .
-    - name: Deploy to minikube
-      run:
-        kubectl apply -f deploy/k8s.yaml
-        kubectl wait --for=condition=ready pod -l app=local-devex
-    - name: Test service URLs
-      run: |
-        minikube service list
-        minikube service local-devex-svc --url
-        echo "------------------opening the service------------------"
-        curl $(minikube service local-devex-svc --url)
+      - uses: actions/checkout@v2
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@master
+
+      - name: Check cluster status
+        run: kubectl get pods -A
+
+      - name: Build Docker image inside Minikube
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./Dockerfile -t lathika00/node-app:latest .
+          echo -n "Verifying images:"
+          docker images
+
+      - name: Deploy to Minikube
+        run: |
+          kubectl apply -f k8s-node-app.yaml
+
+      - name: Wait for pod to be ready
+        run: |
+          echo "Waiting for the pod to be ready..."
+          kubectl wait --for=condition=ready pod -l app=nodejs-app --timeout=120s
+
+      - name: Test service URLs
+        run: |
+          minikube service list
+          minikube service nodejs-app-service --url
