@@ -7,10 +7,13 @@ jobs:
     name: Build Node.js Docker Image and Deploy to Minikube
     steps:
       - uses: actions/checkout@v2
+
       - name: Start Minikube
         uses: medyagh/setup-minikube@master
+
       - name: Try the Cluster
         run: kubectl get pods -A
+
       - name: Build Image
         run: |
           export SHELL=/bin/bash
@@ -18,8 +21,10 @@ jobs:
           docker build -f ./Dockerfile -t lathika/node-app:latest .
           echo "Verifying images:"
           docker images
+
       - name: Deploy to Minikube
         run: kubectl apply -f k8s-node-app.yaml
+
       - name: Test Service URLs
         run: |
           minikube service list
