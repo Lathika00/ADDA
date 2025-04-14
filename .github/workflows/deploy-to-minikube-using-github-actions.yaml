@@ -1,28 +1,26 @@
-name: Deploy Node.js App to Kubernetes
-
-on:
-  push:
-    branches:
-      - main   # 👈 This is your event trigger — runs when code is pushed to 'main'
-
+name: Deploy to Minikube using GitHub Actions
+on: [push]
 jobs:
-  deploy:
+  jobl:
     runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    - name: Set up Kubeconfig
+    name: build Node.js Docker Image and deploy to minikube
+    steps :
+      - uses: actions/checkout@v2
+      - name: Start minikube
+        uses : medyagh/setup-minikube&aster
+      - name: Try the cluster!
+        run: kubectl get pods -A
+      - name: Build image
       run: |
-        mkdir -p ~/.kube
-        echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
-
-    - name: Apply Kubernetes manifests
-      run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./Dockerfi1e -t lathika/node-app:latest .
+          echo -n "verifying images:"
+          docker images
+      - name: Deploy to minikube
+      run:
         kubectl apply -f k8s-node-app.yaml
+      -name: Test service URLs
+       run: |
+         minikube service list
+         inikube service nodejs-app --url
