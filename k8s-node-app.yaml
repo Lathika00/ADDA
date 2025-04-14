@@ -1,44 +1,53 @@
-name: Deploy to Minikube using GitHub Actions
-on: [push]
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app
+  labelsThe failure is due to issues in the `k8s-node-app.yaml` file. The error message from the logs states that the `apiVersion` and `kind` fields are not set in:
+    app: nodejs-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: node this file, which are required for Kubernetes manifests.
 
-jobs:
-  job1:
-    runs-on: ubuntu-latest
-    name: Build Node.js Docker Image and Deploy to Minikube
-    steps:
-      - uses: actions/checkout@v2
+Here is how you can fix the issue:
 
-      - name: Start Minikube
-        uses: medyagh/setup-minikube@master
+### Solutionjs-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+    spec:
+      containers:
+      - name: nodejs-app
 
-      - name: Try the Cluster
-        run: kubectl get pods -A
+Ensure that the `k8s-node-app.yaml` file includes the required `        image: lathika/node-app:latest
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+apiVersion` and `kind` fields. Below is an example of how a valid Kubernetes deployment manifest might look:
 
-      - name: Build Image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./Dockerfile -t lathika/node-app:latest .
-          echo "Verifying images:"
-          docker images
+```yaml
+apiVersion: apps/v1kind: Service
+metadata:
+  name: nodejs-app
+spec:
 
-      - name: Deploy to Minikube
-        run: kubectl apply -f k8s-node-app.yaml
-
-      - name: Verify Deployment
-        run: |
-          echo "Waiting for pods to be ready..."
-          kubectl rollout status deployment/nodejs-app -n default
-          kubectl get pods -n default
-
-      - name: Verify Service
-        run: |
-          echo "Verifying service..."
-          kubectl get svc nodejs-app -n default
-
-      - name: Test Service URLs
-        run: |
-          echo "Listing all services in Minikube:"
-          minikube service list
-          echo "Fetching service URL for nodejs-app:"
-          minikube service nodejs-app --url
+kind: Deployment
+metadata:
+  name: nodejs-app
+  labels  selector:
+    app: nodejs-app
+  ports:
+    - protocol:
+    app: nodejs-app
+spec:
+  replicas: 2
+  selector:
+: TCP
+      port: 80
+      targetPort: 3000
+  type    matchLabels:
+      app: nodejs-app
+  template: NodePort
