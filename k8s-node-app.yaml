@@ -1,38 +1,44 @@
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: nodejs-app
-  namespace: default
-  labels:
-    app: nodejs-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels: # Fixed typo here
-      app: nodejs-app
-  template:
-    metadata:
-      labels:
-        app: nodejs-app
-    spec: # Fixed indentation here
-      containers:
-        - name: nodejs-app
-          image: "lathika/node-app:latest"
-          ports:
-            - containerPort: 3000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nodejs-app
-  namespace: default
-spec:
-  selector:
-    app: nodejs-app
-  type: NodePort
-  ports:
-    - name: http
-      targetPort: 3000
-      port: 80
-      nodePort: 30001 # Optional: Specify nodePort if required
+name: Deploy to Minikube using GitHub Actions
+on: [push]
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    name: Build Node.js Docker Image and Deploy to Minikube
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@master
+
+      - name: Try the Cluster
+        run: kubectl get pods -A
+
+      - name: Build Image
+        run: |
+          export SHELL=/bin/bash
+          eval $(minikube -p minikube docker-env)
+          docker build -f ./Dockerfile -t lathika/node-app:latest .
+          echo "Verifying images:"
+          docker images
+
+      - name: Deploy to Minikube
+        run: kubectl apply -f k8s-node-app.yaml
+
+      - name: Verify Deployment
+        run: |
+          echo "Waiting for pods to be ready..."
+          kubectl rollout status deployment/nodejs-app -n default
+          kubectl get pods -n default
+
+      - name: Verify Service
+        run: |
+          echo "Verifying service..."
+          kubectl get svc nodejs-app -n default
+
+      - name: Test Service URLs
+        run: |
+          echo "Listing all services in Minikube:"
+          minikube service list
+          echo "Fetching service URL for nodejs-app:"
+          minikube service nodejs-app --url
