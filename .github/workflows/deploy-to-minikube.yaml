@@ -1,0 +1,38 @@
+name: Deploy to Minikube using GitHub Actions
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  minikube-deployment:
+    runs-on: ubuntu-latest
+    name: Build and Deploy to Minikube
+    steps:
+      # Step 1: Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Step 2: Start Minikube
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
+
+      # Step 3: Verify the cluster
+      - name: Verify Cluster
+        run: kubectl get pods -A
+
+      # Step 4: Build Docker Image
+      - name: Build Docker Image
+        run: |
+          eval $(minikube docker-env)
+          docker build -t local/dev-app:v1 .
+
+      # Step 5: Deploy to Minikube
+      - name: Deploy Application
+        run: kubectl apply -f k8s-deployment.yaml
+
+      # Step 6: Test Service URLs
+      - name: Test Service URLs
+        run: |
+          minikube service list
+          curl $(minikube service app-service --url)
