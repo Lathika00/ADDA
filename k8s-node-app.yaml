@@ -2,17 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nodejs-app
-  labelsThe failure is due to issues in the `k8s-node-app.yaml` file. The error message from the logs states that the `apiVersion` and `kind` fields are not set in:
+  labels:
     app: nodejs-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: node this file, which are required for Kubernetes manifests.
-
-Here is how you can fix the issue:
-
-### Solutionjs-app
+      app: nodejs-app
   template:
     metadata:
       labels:
@@ -20,34 +16,20 @@ Here is how you can fix the issue:
     spec:
       containers:
       - name: nodejs-app
-
-Ensure that the `k8s-node-app.yaml` file includes the required `        image: lathika/node-app:latest
+        image: lathika/node-app:latest
         ports:
         - containerPort: 3000
+
 ---
 apiVersion: v1
-apiVersion` and `kind` fields. Below is an example of how a valid Kubernetes deployment manifest might look:
-
-```yaml
-apiVersion: apps/v1kind: Service
+kind: Service
 metadata:
-  name: nodejs-app
+  name: nodejs-app-service
 spec:
-
-kind: Deployment
-metadata:
-  name: nodejs-app
-  labels  selector:
+  selector:
     app: nodejs-app
   ports:
-    - protocol:
-    app: nodejs-app
-spec:
-  replicas: 2
-  selector:
-: TCP
+    - protocol: TCP
       port: 80
       targetPort: 3000
-  type    matchLabels:
-      app: nodejs-app
-  template: NodePort
+  type: NodePort
