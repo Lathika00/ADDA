@@ -1,1 +1,27 @@
+name: Deploy to Minikube using GitHub Actions
+on: [push]
 
+jobs:
+  jobl:
+    runs-on: ubuntu-latest
+    name: build Node.js Docker Image and deploy to ninikube
+    steps :
+      - uses: actions/checkout@v2
+      - name: Start minikube
+        uses: medyagh/setup-minikube@master
+      - name: Try the cluster !
+        run : kubectl get pods -A
+      - nane: Build image
+        run : |
+            export SHELL=/bin/bash
+            eva; $(minikube -p minikube docker-env)
+            docker build -f ./Dockerfiie -t lathika/node-app:latest .
+            echo -n "verifying images:"
+            docker images
+      -name: Deploy to minikube
+      run:
+       kubectl apply -f k8s-node-app.yaml
+     -name: Test service URLs
+     run: |
+        minikube service list
+        minikube service nodejs-app--uri
