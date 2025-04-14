@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: Lathika00/node-app:latest
+        image: lathika0325/node-app:latest
         ports:
         - containerPort: 3000
 
