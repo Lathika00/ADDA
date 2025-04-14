@@ -15,28 +15,13 @@ spec:
         app: nodejs-app
     spec:
       containers:
-        - name: nodejs-app
-          image: lathika0325/node-app:latest
-          ports:
-            - containerPort: 3000
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 5
-            failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nodejs-app-service
-spec:
-  selector:
-    app: nodejs-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
-  type: NodePort
+      - name: nodejs-app
+        image: lathika0325/node-app:latest
+        ports:
+        - containerPort: 3000
+        readinessProbe:
+          httpGet:
+            path: /health # Update this if the application has a specific health endpoint
+            port: 3000
+          initialDelaySeconds: 15 # Increased delay to allow the application to start
+          periodSeconds: 10
